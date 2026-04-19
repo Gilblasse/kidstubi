@@ -3,7 +3,10 @@
     "allow": [
       "Bash(pnpm create *)",
       "Bash(mv CLAUDE.md ../safe-youtube-CLAUDE.md.bak)",
-      "Bash(mv docs *)"
+      "Bash(mv docs *)",
+      "Bash(mv ../safe-youtube-CLAUDE.md.bak CLAUDE.md)",
+      "Bash(mv ../safe-youtube-docs.bak docs)",
+      "Bash(pnpm dlx *)"
     ]
   }
 }
