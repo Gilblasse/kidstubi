@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm create *)",
+      "Bash(mv CLAUDE.md ../safe-youtube-CLAUDE.md.bak)",
+      "Bash(mv docs *)"
+    ]
+  }
+}
