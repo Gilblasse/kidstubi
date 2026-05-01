@@ -12,7 +12,7 @@ These must ship in order. Nothing else starts until Sprint 0 is `Done`.
 
 ### T0.1 — Project scaffold
 - **Owner:** Orchestrator (one-time setup)
-- **Status:** Ready
+- **Status:** Done
 - **Depends on:** —
 - **Deliverables:**
   - `pnpm` Next.js App Router project, TypeScript strict
@@ -24,7 +24,7 @@ These must ship in order. Nothing else starts until Sprint 0 is `Done`.
 
 ### T0.2 — Database schema + query layer
 - **Owner:** Schema Agent
-- **Status:** Blocked on T0.1
+- **Status:** Done
 - **Deliverables:**
   - `db/schema.ts` implementing every table in CLAUDE.md "Data model sketch" exactly
   - Drizzle config + initial migration
@@ -38,7 +38,7 @@ These must ship in order. Nothing else starts until Sprint 0 is `Done`.
 
 ### T0.3 — Clerk auth + parent onboarding
 - **Owner:** Auth & Middleware Agent
-- **Status:** Blocked on T0.2
+- **Status:** Done
 - **Deliverables:**
   - Clerk installed via Vercel Marketplace integration
   - Sign-up flow creates a `parents` row keyed by `clerk_user_id` on first login
@@ -51,7 +51,7 @@ These must ship in order. Nothing else starts until Sprint 0 is `Done`.
 
 ### T0.4 — Profile switching + middleware gate
 - **Owner:** Auth & Middleware Agent
-- **Status:** Blocked on T0.3
+- **Status:** Done
 - **Deliverables:**
   - `middleware.ts` that:
     - Blocks `/(parent)/*` without Clerk session → redirect to sign-in
@@ -75,7 +75,7 @@ Schema Agent is done for this sprint after T0.2. Parent Dashboard and Kid View a
 
 ### T1.1 — Channel add + video review screen (parent side)
 - **Owner:** Parent Dashboard Agent
-- **Status:** Blocked on Sprint 0
+- **Status:** Done
 - **Depends on:** T1.3 (YouTube channel/video metadata fetch)
 - **Deliverables:**
   - `app/(parent)/kids/[kidId]/channels/page.tsx` lists approved channels, "Add Channel" button
@@ -89,7 +89,7 @@ Schema Agent is done for this sprint after T0.2. Parent Dashboard and Kid View a
 
 ### T1.2 — Kid home feed, channel page, watch page
 - **Owner:** Kid View Agent
-- **Status:** Blocked on Sprint 0
+- **Status:** Done
 - **Deliverables:**
   - `app/(kid)/[kidId]/page.tsx` — home feed grid of approved videos for this kid, sorted by approved_at desc
   - `app/(kid)/[kidId]/channel/[channelId]/page.tsx` — banner, avatar, approved-videos grid for that channel
@@ -104,7 +104,7 @@ Schema Agent is done for this sprint after T0.2. Parent Dashboard and Kid View a
 
 ### T1.3 — YouTube metadata fetchers
 - **Owner:** YouTube Integration Agent
-- **Status:** Blocked on T0.1
+- **Status:** Done
 - **Deliverables:**
   - `lib/youtube/client.ts` — typed wrapper around YouTube Data API v3, server-only
   - `lib/youtube/channels.ts` — `getChannelByIdOrUrl`, `listChannelVideos(channelId, pageToken)`
@@ -117,7 +117,7 @@ Schema Agent is done for this sprint after T0.2. Parent Dashboard and Kid View a
 
 ### T1.4 — Watch history write
 - **Owner:** Kid View Agent
-- **Status:** Blocked on T1.2
+- **Status:** Done
 - **Deliverables:**
   - Server Action `recordWatch(kidProfileId, videoId, secondsWatched)` inserts into `watch_history`
   - Client beacon on watch page fires on play, on pause, on tab close (use `navigator.sendBeacon`)
@@ -127,7 +127,7 @@ Schema Agent is done for this sprint after T0.2. Parent Dashboard and Kid View a
 
 ### T1.5 — Parent watch history view
 - **Owner:** Parent Dashboard Agent
-- **Status:** Blocked on T1.4
+- **Status:** Done
 - **Deliverables:**
   - `app/(parent)/kids/[kidId]/history/page.tsx` — chronological list grouped by day
   - Each row: thumbnail, title, channel, watched time, "Replay" button
@@ -142,12 +142,12 @@ Schema Agent is done for this sprint after T0.2. Parent Dashboard and Kid View a
 
 ### T2.1 — Screen-time rules editor
 - **Owner:** Parent Dashboard Agent
-- **Status:** Blocked on Sprint 1
+- **Status:** Done
 - **Deliverables:** Form at `/kids/[kidId]/screen-time` to set allowed minutes per day-of-week (0–6)
 
 ### T2.2 — Server-truth remaining-time endpoint
 - **Owner:** Screen Time Agent
-- **Status:** Blocked on T2.1
+- **Status:** Done
 - **Deliverables:**
   - `app/api/screen-time/remaining/route.ts` returns `{ remaining_seconds: number }` for active kid profile
   - Computation: today's rule `allowed_minutes * 60` minus sum of today's `screen_time_sessions.seconds_used`
@@ -155,7 +155,7 @@ Schema Agent is done for this sprint after T0.2. Parent Dashboard and Kid View a
 
 ### T2.3 — Session tracking + lockout
 - **Owner:** Screen Time Agent + Kid View Agent (coordinate)
-- **Status:** Blocked on T2.2
+- **Status:** Done
 - **Deliverables:**
   - Session row opens on watch-page mount, closes on unmount/beacon
   - Client polls `/api/screen-time/remaining` every 30s
@@ -167,7 +167,7 @@ Schema Agent is done for this sprint after T0.2. Parent Dashboard and Kid View a
 
 ### T2.4 — Usage stats view
 - **Owner:** Parent Dashboard Agent
-- **Status:** Blocked on T2.3
+- **Status:** Done
 - **Deliverables:** Avg per day, per week, total across date range, charted
 
 ---
@@ -176,19 +176,19 @@ Schema Agent is done for this sprint after T0.2. Parent Dashboard and Kid View a
 
 ### T3.1 — Pending approvals inbox
 - **Owner:** Parent Dashboard Agent
-- **Status:** Blocked on Sprint 1
+- **Status:** Done
 - **Deliverables:** `/kids/[kidId]/approvals` lists `pending_video_approvals`, approve/reject actions, filterable by source
 
 ### T3.2 — Channel-upload cron
 - **Owner:** YouTube Integration Agent
-- **Status:** Blocked on Sprint 1
+- **Status:** Done
 - **Deliverables:**
   - Vercel Cron daily, iterates `approved_channels`, inserts new uploads into `pending_video_approvals` with source `channel_upload`
   - Configured in `vercel.ts`
 
 ### T3.3 — Notifications
 - **Owner:** Notifications Agent
-- **Status:** Blocked on T3.1
+- **Status:** Done
 - **Deliverables:**
   - `lib/notifications/` with in-app + Resend email
   - In-app bell component in parent nav
@@ -200,17 +200,17 @@ Schema Agent is done for this sprint after T0.2. Parent Dashboard and Kid View a
 
 ### T4.1 — Search endpoint + blocklist
 - **Owner:** YouTube Integration Agent
-- **Status:** Blocked on Sprint 3
+- **Status:** Done
 - **Deliverables:** Full `/api/search` pipeline per CLAUDE.md (search_enabled check → safeSearch=strict → blocklist filter → history insert → optional alert)
 
 ### T4.2 — Kid search UI
 - **Owner:** Kid View Agent
-- **Status:** Blocked on T4.1
+- **Status:** Done
 - **Deliverables:** Search box in top nav, results as non-playable cards, click triggers approval-request Server Action, "Waiting" shelf on home
 
 ### T4.3 — Search history + blocklist admin
 - **Owner:** Parent Dashboard Agent
-- **Status:** Blocked on T4.1
+- **Status:** Done
 - **Deliverables:** `/kids/[kidId]/search-history`, blocklist editor in settings, live-alerts toggle
 
 ---

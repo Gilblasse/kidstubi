@@ -6,7 +6,12 @@
       "Bash(mv docs *)",
       "Bash(mv ../safe-youtube-CLAUDE.md.bak CLAUDE.md)",
       "Bash(mv ../safe-youtube-docs.bak docs)",
-      "Bash(pnpm dlx *)"
+      "Bash(pnpm dlx *)",
+      "Bash(pnpm add *)",
+      "Bash(pnpm typecheck *)",
+      "Bash(pnpm lint *)",
+      "Bash(pnpm dev *)",
+      "Bash(pnpm db:generate)"
     ]
   }
 }
