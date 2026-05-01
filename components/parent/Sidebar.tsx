@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { KidProfile } from '@/db/schema';
+import { KidAvatar } from '@/components/kid/KidAvatar';
 
 export function Sidebar({ kids }: { kids: KidProfile[] }) {
   return (
@@ -41,8 +42,13 @@ export function Sidebar({ kids }: { kids: KidProfile[] }) {
           {kids.map((k) => (
             <li key={k.id}>
               <details className="rounded">
-                <summary className="cursor-pointer rounded px-3 py-2 hover:bg-accent">
-                  {k.displayName}
+                <summary className="flex cursor-pointer items-center gap-2 rounded px-3 py-2 hover:bg-accent">
+                  <KidAvatar
+                    displayName={k.displayName}
+                    avatarUrl={k.avatarUrl}
+                    size="sm"
+                  />
+                  <span>{k.displayName}</span>
                 </summary>
                 <ul className="ml-3 space-y-0.5 border-l border-border pl-2 text-xs">
                   <li>

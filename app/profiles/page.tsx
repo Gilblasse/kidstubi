@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { getParentByClerkId } from '@/db/queries/parents';
 import { listKidProfilesForParent } from '@/db/queries/kidProfiles';
+import { KidAvatar } from '@/components/kid/KidAvatar';
 import { setActiveKidProfile } from './actions';
 
 export default async function ProfilesPage() {
@@ -34,7 +35,11 @@ export default async function ProfilesPage() {
                   type="submit"
                   className="flex w-full flex-col items-center gap-2 rounded-lg border border-input p-4 hover:bg-accent"
                 >
-                  <div className="h-20 w-20 rounded-full bg-muted" />
+                  <KidAvatar
+                    displayName={kid.displayName}
+                    avatarUrl={kid.avatarUrl}
+                    size="xl"
+                  />
                   <span className="text-sm">{kid.displayName}</span>
                 </button>
               </form>

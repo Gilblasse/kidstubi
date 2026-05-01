@@ -4,7 +4,7 @@ import { auth } from '@clerk/nextjs/server';
 
 export default async function HomePage() {
   const { userId } = await auth();
-  if (userId) redirect('/dashboard');
+  if (userId) redirect('/profiles');
 
   return (
     <main className="flex min-h-screen flex-1 items-center justify-center p-8">

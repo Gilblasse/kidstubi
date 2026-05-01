@@ -15,6 +15,7 @@ export default async function KidLayout({
     <KidShell
       kidId={kidId}
       kidName={kid.displayName}
+      kidAvatarUrl={kid.avatarUrl}
       searchEnabled={kid.searchEnabled}
     >
       {children}

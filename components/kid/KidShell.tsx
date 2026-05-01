@@ -3,15 +3,18 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { SearchBar } from './SearchBar';
+import { KidAvatar } from './KidAvatar';
 
 export function KidShell({
   kidId,
   kidName,
+  kidAvatarUrl,
   searchEnabled,
   children,
 }: {
   kidId: string;
   kidName: string;
+  kidAvatarUrl: string | null;
   searchEnabled: boolean;
   children: React.ReactNode;
 }) {
@@ -43,13 +46,11 @@ export function KidShell({
             </div>
           )}
         </div>
-        <div
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-sm font-semibold"
-          aria-label={`${kidName} profile`}
-          title={kidName}
-        >
-          {kidName.slice(0, 1).toUpperCase()}
-        </div>
+        <KidAvatar
+          displayName={kidName}
+          avatarUrl={kidAvatarUrl}
+          size="sm"
+        />
       </header>
       <div className="flex flex-1">
         {railOpen && (
