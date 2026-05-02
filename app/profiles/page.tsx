@@ -15,7 +15,7 @@ export default async function ProfilesPage() {
   const kids = await listKidProfilesForParent(parent.id);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center p-8">
+    <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center p-4 sm:p-8">
       <h1 className="mb-6 text-2xl font-semibold">Who&apos;s watching?</h1>
       {kids.length === 0 ? (
         <p className="text-center text-muted-foreground">

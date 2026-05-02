@@ -7,7 +7,7 @@ export default async function HomePage() {
   if (userId) redirect('/profiles');
 
   return (
-    <main className="flex min-h-screen flex-1 items-center justify-center p-8">
+    <main className="flex min-h-screen flex-1 items-center justify-center p-4 sm:p-8">
       <div className="max-w-md text-center">
         <h1 className="mb-4 text-4xl font-bold">KidTube</h1>
         <p className="mb-8 text-muted-foreground">A safe YouTube for kids.</p>

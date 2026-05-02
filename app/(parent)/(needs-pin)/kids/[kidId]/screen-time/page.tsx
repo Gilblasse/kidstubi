@@ -26,7 +26,7 @@ export default async function ScreenTimePage({
   const minutesByDay = new Map(rules.map((r) => [r.dayOfWeek, r.allowedMinutes]));
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 p-8">
+    <div className="mx-auto max-w-3xl space-y-6 p-4 sm:p-8">
       <header>
         <h1 className="text-2xl font-semibold">
           Screen time for {kid.displayName}

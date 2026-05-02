@@ -34,7 +34,7 @@ export default async function DashboardPage() {
   ]);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 p-8">
+    <div className="mx-auto max-w-5xl space-y-6 p-4 sm:p-8">
       <header>
         <h1 className="text-2xl font-semibold">Dashboard</h1>
         <p className="text-sm text-muted-foreground">
@@ -224,6 +224,12 @@ export default async function DashboardPage() {
                         className={buttonVariants({ variant: 'outline', size: 'sm' })}
                       >
                         Search
+                      </Link>
+                      <Link
+                        href={`/kids/${k.id}/viewing-rules`}
+                        className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                      >
+                        Viewing rules
                       </Link>
                     </div>
 

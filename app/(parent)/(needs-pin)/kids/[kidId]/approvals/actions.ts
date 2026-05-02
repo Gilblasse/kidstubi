@@ -7,6 +7,7 @@ import { requireParentKid } from '@/lib/parent/context';
 import { resolvePendingApproval } from '@/db/queries/approvals';
 import { bulkInsertApprovedVideos } from '@/db/queries/videos';
 import { getVideoMetadata } from '@/lib/youtube/videos';
+import { normalizeRating } from '@/lib/kid/viewingRules';
 
 const schema = z.object({
   kidId: z.string().uuid(),
@@ -34,6 +35,8 @@ export async function approvePendingAction(formData: FormData) {
       title: meta.title,
       thumbnailUrl: meta.thumbnailUrl,
       durationSeconds: meta.durationSeconds,
+      contentRating: normalizeRating(meta.rating),
+      madeForKids: meta.rating.madeForKids ?? null,
     },
   ]);
   await resolvePendingApproval(parent.id, pendingId, 'approved');

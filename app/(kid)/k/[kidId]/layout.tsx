@@ -16,7 +16,6 @@ export default async function KidLayout({
       kidId={kidId}
       kidName={kid.displayName}
       kidAvatarUrl={kid.avatarUrl}
-      searchEnabled={kid.searchEnabled}
     >
       {children}
     </KidShell>

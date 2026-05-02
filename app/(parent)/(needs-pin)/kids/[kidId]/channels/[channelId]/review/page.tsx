@@ -3,7 +3,11 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requireParentKid } from '@/lib/parent/context';
 import { getChannelByIdOrUrl, listChannelVideos } from '@/lib/youtube/channels';
+import { listVideoMetadata } from '@/lib/youtube/videos';
 import { listApprovedVideosForChannel } from '@/db/queries/videos';
+import { listBlocklistForParent } from '@/db/queries/blocklist';
+import { listKidKeywords } from '@/db/queries/viewingRules';
+import { isMaxContentRating, isVideoAllowed } from '@/lib/kid/viewingRules';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SelectAllCheckbox } from '@/components/parent/SelectAllCheckbox';
@@ -28,20 +32,48 @@ export default async function ChannelReviewPage({
     channel.uploadsPlaylistId,
     page ?? undefined,
   );
-  const existingApproved = await listApprovedVideosForChannel(
-    parent.id,
-    kid.id,
-    channel.channelId,
-  );
+  const [existingApproved, parentBlocklist, kidBlocklist, ratingMeta] = await Promise.all([
+    listApprovedVideosForChannel(parent.id, kid.id, channel.channelId),
+    listBlocklistForParent(parent.id),
+    listKidKeywords(parent.id, kid.id),
+    videosPage.videos.length > 0
+      ? listVideoMetadata(videosPage.videos.map((v) => v.videoId))
+      : Promise.resolve([]),
+  ]);
   const approvedIds = new Set(existingApproved.map((v) => v.youtubeVideoId));
+  const ratingByVideoId = new Map(ratingMeta.map((m) => [m.videoId, m.rating]));
+
+  const maxRating = isMaxContentRating(kid.maxContentRating)
+    ? kid.maxContentRating
+    : 'tv_g';
+  const rules = {
+    maxRating,
+    kidKeywords: kidBlocklist.map((b) => b.keyword),
+    parentKeywords: parentBlocklist.map((b) => b.keyword),
+  };
+
+  const disallowedById = new Map<string, 'rating' | 'keyword'>();
+  for (const v of videosPage.videos) {
+    const decision = isVideoAllowed(
+      {
+        title: v.title,
+        description: v.description,
+        channelTitle: channel.title,
+        rating: ratingByVideoId.get(v.videoId) ?? {},
+      },
+      rules,
+    );
+    if (!decision.allowed) disallowedById.set(v.videoId, decision.reason);
+  }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 p-8">
+    <div className="mx-auto max-w-5xl space-y-6 p-4 sm:p-8">
       <header>
         <h1 className="text-2xl font-semibold">{channel.title}</h1>
         <p className="text-sm text-muted-foreground">
-          Reviewing for {kid.displayName}. Pre-checked items are already approved.
-          Select-All only applies to this page.
+          Reviewing for {kid.displayName}. Pre-checked items are already approved;
+          unchecking one removes its approval. Select-All only applies to this page.
+          Items blocked by viewing rules can't be approved.
         </p>
       </header>
 
@@ -53,8 +85,16 @@ export default async function ChannelReviewPage({
           <form action={submitReviewAction} className="space-y-4">
             <input type="hidden" name="kidId" value={kid.id} />
             <input type="hidden" name="channelId" value={channel.channelId} />
+            {videosPage.videos.map((v) => (
+              <input
+                key={v.videoId}
+                type="hidden"
+                name="pageVideoId"
+                value={v.videoId}
+              />
+            ))}
 
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <SelectAllCheckbox checkboxName="approve" />
               <Button type="submit">Save approvals</Button>
             </div>
@@ -62,18 +102,23 @@ export default async function ChannelReviewPage({
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {videosPage.videos.map((v) => {
                 const isApproved = approvedIds.has(v.videoId);
+                const blockedReason = disallowedById.get(v.videoId);
                 return (
                   <li
                     key={v.videoId}
-                    className="flex gap-3 rounded-lg border border-border p-3"
+                    className={
+                      'flex gap-3 rounded-lg border border-border p-3 ' +
+                      (blockedReason ? 'opacity-60' : '')
+                    }
                   >
                     <label className="flex flex-1 cursor-pointer gap-3">
                       <input
                         type="checkbox"
                         name="approve"
                         value={v.videoId}
-                        defaultChecked={isApproved}
-                        className="mt-1 h-4 w-4 rounded border-input"
+                        defaultChecked={isApproved && !blockedReason}
+                        disabled={!!blockedReason}
+                        className="mt-1 h-4 w-4 rounded border-input disabled:cursor-not-allowed"
                       />
                       <div className="relative h-20 w-32 shrink-0 overflow-hidden rounded bg-muted">
                         {v.thumbnailUrl ? (
@@ -97,6 +142,11 @@ export default async function ChannelReviewPage({
                           {formatTimeAgo(v.publishedAt)}
                           {isApproved && ' · already approved'}
                         </div>
+                        {blockedReason ? (
+                          <div className="mt-1 inline-block rounded bg-destructive/15 px-1.5 py-0.5 text-[11px] font-medium text-destructive">
+                            Blocked: {blockedReason === 'rating' ? 'rating' : 'keyword'}
+                          </div>
+                        ) : null}
                       </div>
                     </label>
                   </li>

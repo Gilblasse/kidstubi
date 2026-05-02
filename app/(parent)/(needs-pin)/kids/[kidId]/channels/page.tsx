@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { requireParentKid } from '@/lib/parent/context';
 import { listApprovedChannelsForKid } from '@/db/queries/channels';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,7 @@ export default async function ChannelsPage({
   const channels = await listApprovedChannelsForKid(parent.id, kid.id);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 p-8">
+    <div className="mx-auto max-w-4xl space-y-6 p-4 sm:p-8">
       <header>
         <h1 className="text-2xl font-semibold">Channels for {kid.displayName}</h1>
         <p className="text-sm text-muted-foreground">
@@ -34,7 +35,10 @@ export default async function ChannelsPage({
           <CardTitle>Add a channel</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <form action={lookupChannelAction} className="flex items-end gap-3">
+          <form
+            action={lookupChannelAction}
+            className="flex flex-col gap-3 sm:flex-row sm:items-end"
+          >
             <input type="hidden" name="kidId" value={kid.id} />
             <div className="flex-1">
               <Label htmlFor="channelInput">YouTube URL, @handle, or channel ID</Label>
@@ -57,7 +61,7 @@ export default async function ChannelsPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Approved</CardTitle>
+          <CardTitle>Approved channels</CardTitle>
         </CardHeader>
         <CardContent>
           {channels.length === 0 ? (
@@ -65,11 +69,16 @@ export default async function ChannelsPage({
           ) : (
             <ul className="divide-y divide-border">
               {channels.map((c) => (
-                <li key={c.id} className="py-3">
-                  <div className="font-medium">{c.channelTitle}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {c.youtubeChannelId}
-                  </div>
+                <li key={c.id}>
+                  <Link
+                    href={`/kids/${kid.id}/channels/${c.youtubeChannelId}/review`}
+                    className="flex items-center justify-between gap-3 rounded-md px-2 py-3 -mx-2 transition-colors hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <span className="font-medium">{c.channelTitle}</span>
+                    <span className="text-muted-foreground" aria-hidden>
+                      ›
+                    </span>
+                  </Link>
                 </li>
               ))}
             </ul>

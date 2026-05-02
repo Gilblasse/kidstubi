@@ -15,7 +15,7 @@ export default async function ParentSearchHistoryPage({
   const history = await listSearchHistoryForKid(parent.id, kid.id);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 p-8">
+    <div className="mx-auto max-w-3xl space-y-6 p-4 sm:p-8">
       <header>
         <h1 className="text-2xl font-semibold">
           Search history for {kid.displayName}
@@ -72,10 +72,12 @@ export default async function ParentSearchHistoryPage({
               {history.map((s) => (
                 <li
                   key={s.id}
-                  className="flex items-center justify-between py-2 text-sm"
+                  className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 py-2 text-sm"
                 >
-                  <span className="font-medium">{s.query}</span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="min-w-0 break-words font-medium">
+                    {s.query}
+                  </span>
+                  <span className="shrink-0 text-xs text-muted-foreground">
                     {s.resultCount} results · {formatTimeAgo(s.searchedAt)}
                   </span>
                 </li>

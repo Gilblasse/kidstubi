@@ -1,0 +1,1 @@
+ALTER TABLE "kid_profiles" ADD COLUMN "discovery_enabled" boolean DEFAULT false NOT NULL;

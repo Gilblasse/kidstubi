@@ -2,7 +2,7 @@ import { setPinAction } from './actions';
 
 export default function SetupPinPage() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center p-8">
+    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center p-4 sm:p-8">
       <h1 className="mb-2 text-2xl font-semibold">Set your parent PIN</h1>
       <p className="mb-6 text-sm text-muted-foreground">
         You&apos;ll use this PIN to return to the parent dashboard after being in kid mode. 4–8 digits.

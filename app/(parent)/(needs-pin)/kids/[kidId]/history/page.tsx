@@ -31,7 +31,7 @@ export default async function ParentHistoryPage({
   const titleById = new Map(metaList.map((m) => [m.videoId, m.title]));
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 p-8">
+    <div className="mx-auto max-w-4xl space-y-6 p-4 sm:p-8">
       <header>
         <h1 className="text-2xl font-semibold">
           History for {kid.displayName}

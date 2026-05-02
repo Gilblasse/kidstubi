@@ -11,7 +11,10 @@
       "Bash(pnpm typecheck *)",
       "Bash(pnpm lint *)",
       "Bash(pnpm dev *)",
-      "Bash(pnpm db:generate)"
+      "Bash(pnpm db:generate)",
+      "Bash(xargs grep *)",
+      "Bash(pnpm drizzle-kit *)",
+      "Bash(pnpm build *)"
     ]
   }
 }

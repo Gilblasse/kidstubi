@@ -1,5 +1,6 @@
 import 'server-only';
 import { parseISO8601Duration, youtubeFetch } from './client';
+import type { RatingSignal } from '@/lib/kid/viewingRules';
 
 export type VideoMetadata = {
   videoId: string;
@@ -10,22 +11,64 @@ export type VideoMetadata = {
   thumbnailUrl: string;
   publishedAt: string;
   durationSeconds: number;
+  rating: RatingSignal;
 };
 
-type VideosListResponse = {
-  items?: Array<{
-    id: string;
-    snippet: {
-      title: string;
-      description: string;
-      publishedAt: string;
-      channelId: string;
-      channelTitle: string;
-      thumbnails: { default?: { url: string }; medium?: { url: string }; high?: { url: string } };
+type VideoItem = {
+  id: string;
+  snippet: {
+    title: string;
+    description: string;
+    publishedAt: string;
+    channelId: string;
+    channelTitle: string;
+    thumbnails: { default?: { url: string }; medium?: { url: string }; high?: { url: string } };
+  };
+  contentDetails: {
+    duration: string;
+    contentRating?: {
+      tvpgRating?: string;
+      mpaaRating?: string;
+      ytRating?: string;
     };
-    contentDetails: { duration: string };
+  };
+  status?: { madeForKids?: boolean };
+};
+
+type VideosListResponse = { items?: VideoItem[]; nextPageToken?: string };
+
+type ChannelContentDetailsResponse = {
+  items?: Array<{
+    contentDetails?: { relatedPlaylists?: { uploads?: string } };
   }>;
 };
+
+type PlaylistItemsResponse = {
+  items?: Array<{
+    snippet: { resourceId: { videoId: string } };
+  }>;
+};
+
+function mapVideoItem(item: VideoItem): VideoMetadata {
+  const t = item.snippet.thumbnails;
+  const cr = item.contentDetails.contentRating ?? {};
+  return {
+    videoId: item.id,
+    channelId: item.snippet.channelId,
+    channelTitle: item.snippet.channelTitle,
+    title: item.snippet.title,
+    description: item.snippet.description,
+    thumbnailUrl: t.high?.url ?? t.medium?.url ?? t.default?.url ?? '',
+    publishedAt: item.snippet.publishedAt,
+    durationSeconds: parseISO8601Duration(item.contentDetails.duration),
+    rating: {
+      tvpgRating: cr.tvpgRating ?? null,
+      mpaaRating: cr.mpaaRating ?? null,
+      ytRating: cr.ytRating ?? null,
+      madeForKids: item.status?.madeForKids ?? null,
+    },
+  };
+}
 
 export async function getVideoMetadata(videoId: string): Promise<VideoMetadata | null> {
   const [item] = await listVideoMetadata([videoId]);
@@ -43,24 +86,96 @@ export async function listVideoMetadata(
     const data = await youtubeFetch<VideosListResponse>({
       path: '/videos',
       params: {
-        part: 'snippet,contentDetails',
+        part: 'snippet,contentDetails,status',
         id: chunk.join(','),
         maxResults: 50,
       },
     });
     for (const item of data.items ?? []) {
-      const t = item.snippet.thumbnails;
-      out.push({
-        videoId: item.id,
-        channelId: item.snippet.channelId,
-        channelTitle: item.snippet.channelTitle,
-        title: item.snippet.title,
-        description: item.snippet.description,
-        thumbnailUrl: t.high?.url ?? t.medium?.url ?? t.default?.url ?? '',
-        publishedAt: item.snippet.publishedAt,
-        durationSeconds: parseISO8601Duration(item.contentDetails.duration),
-      });
+      out.push(mapVideoItem(item));
     }
   }
   return out;
+}
+
+const DISCOVERY_CATEGORY_IDS = ['10', '15', '20', '26', '27', '28'] as const;
+
+export type DiscoveryPageTokens = Record<string, string | null>;
+
+export type DiscoveryPage = {
+  videos: VideoMetadata[];
+  nextTokens: DiscoveryPageTokens;
+  hasMore: boolean;
+};
+
+export async function listDiscoveryVideos(
+  tokens: DiscoveryPageTokens = {},
+  regionCode = 'US',
+): Promise<DiscoveryPage> {
+  const results = await Promise.all(
+    DISCOVERY_CATEGORY_IDS.map(async (categoryId) => {
+      const token = tokens[categoryId];
+      if (token === null) {
+        return { categoryId, data: { items: [] } as VideosListResponse };
+      }
+      try {
+        const data = await youtubeFetch<VideosListResponse>({
+          path: '/videos',
+          params: {
+            part: 'snippet,contentDetails,status',
+            chart: 'mostPopular',
+            regionCode,
+            videoCategoryId: categoryId,
+            maxResults: 25,
+            pageToken: token ?? undefined,
+          },
+          revalidateSeconds: 3600,
+        });
+        return { categoryId, data };
+      } catch (err) {
+        console.warn(
+          `[discovery] category ${categoryId} failed:`,
+          err instanceof Error ? err.message : err,
+        );
+        return { categoryId, data: { items: [] } as VideosListResponse };
+      }
+    }),
+  );
+  const seen = new Set<string>();
+  const out: VideoMetadata[] = [];
+  const nextTokens: DiscoveryPageTokens = {};
+  for (const { categoryId, data } of results) {
+    for (const item of data.items ?? []) {
+      if (seen.has(item.id)) continue;
+      seen.add(item.id);
+      out.push(mapVideoItem(item));
+    }
+    nextTokens[categoryId] = data.nextPageToken ?? null;
+  }
+  const hasMore = Object.values(nextTokens).some((t) => t !== null);
+  return { videos: out, nextTokens, hasMore };
+}
+
+export async function listChannelRailVideos(
+  channelId: string,
+  max = 24,
+): Promise<VideoMetadata[]> {
+  const channelData = await youtubeFetch<ChannelContentDetailsResponse>({
+    path: '/channels',
+    params: { part: 'contentDetails', id: channelId, maxResults: 1 },
+    revalidateSeconds: 3600,
+  });
+  const uploadsId =
+    channelData.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
+  if (!uploadsId) return [];
+  const playlistData = await youtubeFetch<PlaylistItemsResponse>({
+    path: '/playlistItems',
+    params: { part: 'snippet', playlistId: uploadsId, maxResults: max },
+    revalidateSeconds: 1800,
+  });
+  const videoIds = (playlistData.items ?? []).map(
+    (i) => i.snippet.resourceId.videoId,
+  );
+  if (videoIds.length === 0) return [];
+  return listVideoMetadata(videoIds);
 }

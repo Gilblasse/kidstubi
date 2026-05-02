@@ -17,17 +17,28 @@ export const parents = pgTable('parents', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const kidProfiles = pgTable('kid_profiles', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  parentId: uuid('parent_id')
-    .notNull()
-    .references(() => parents.id, { onDelete: 'cascade' }),
-  displayName: text('display_name').notNull(),
-  avatarUrl: text('avatar_url'),
-  searchEnabled: boolean('search_enabled').notNull().default(true),
-  liveSearchAlerts: boolean('live_search_alerts').notNull().default(false),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-});
+export const kidProfiles = pgTable(
+  'kid_profiles',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    parentId: uuid('parent_id')
+      .notNull()
+      .references(() => parents.id, { onDelete: 'cascade' }),
+    displayName: text('display_name').notNull(),
+    avatarUrl: text('avatar_url'),
+    searchEnabled: boolean('search_enabled').notNull().default(true),
+    liveSearchAlerts: boolean('live_search_alerts').notNull().default(false),
+    maxContentRating: text('max_content_rating').notNull().default('tv_g'),
+    discoveryEnabled: boolean('discovery_enabled').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    check(
+      'kid_profiles_max_content_rating_check',
+      sql`${t.maxContentRating} in ('tv_y', 'tv_y7', 'tv_g', 'tv_pg', 'tv_14', 'tv_ma', 'unrestricted')`,
+    ),
+  ],
+);
 
 export const approvedChannels = pgTable('approved_channels', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -49,6 +60,8 @@ export const approvedVideos = pgTable('approved_videos', {
   title: text('title').notNull(),
   thumbnailUrl: text('thumbnail_url').notNull(),
   durationSeconds: integer('duration_seconds').notNull(),
+  contentRating: text('content_rating'),
+  madeForKids: boolean('made_for_kids'),
   approvedAt: timestamp('approved_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -130,6 +143,15 @@ export const searchBlocklist = pgTable('search_blocklist', {
   keyword: text('keyword').notNull(),
 });
 
+export const kidSearchBlocklist = pgTable('kid_search_blocklist', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  kidProfileId: uuid('kid_profile_id')
+    .notNull()
+    .references(() => kidProfiles.id, { onDelete: 'cascade' }),
+  keyword: text('keyword').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const notifications = pgTable('notifications', {
   id: uuid('id').primaryKey().defaultRandom(),
   parentId: uuid('parent_id')
@@ -172,6 +194,8 @@ export type ScreenTimeSession = typeof screenTimeSessions.$inferSelect;
 export type NewScreenTimeSession = typeof screenTimeSessions.$inferInsert;
 export type SearchBlocklistKeyword = typeof searchBlocklist.$inferSelect;
 export type NewSearchBlocklistKeyword = typeof searchBlocklist.$inferInsert;
+export type KidSearchBlocklistKeyword = typeof kidSearchBlocklist.$inferSelect;
+export type NewKidSearchBlocklistKeyword = typeof kidSearchBlocklist.$inferInsert;
 export type Notification = typeof notifications.$inferSelect;
 export type NewNotification = typeof notifications.$inferInsert;
 export type DigestRun = typeof digestRuns.$inferSelect;
@@ -182,3 +206,14 @@ export type PendingApprovalSource = (typeof PENDING_APPROVAL_SOURCES)[number];
 
 export const PENDING_APPROVAL_RESOLUTIONS = ['approved', 'rejected'] as const;
 export type PendingApprovalResolution = (typeof PENDING_APPROVAL_RESOLUTIONS)[number];
+
+export const MAX_CONTENT_RATINGS = [
+  'tv_y',
+  'tv_y7',
+  'tv_g',
+  'tv_pg',
+  'tv_14',
+  'tv_ma',
+  'unrestricted',
+] as const;
+export type MaxContentRating = (typeof MAX_CONTENT_RATINGS)[number];

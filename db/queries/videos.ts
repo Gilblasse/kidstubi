@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, inArray } from 'drizzle-orm';
 import { getDb } from '../client';
 import {
   approvedVideos,
@@ -82,6 +82,30 @@ export async function bulkInsertApprovedVideos(
     .insert(approvedVideos)
     .values(videos.map((v) => ({ ...v, kidProfileId })))
     .returning();
+}
+
+export async function deleteApprovedVideosByIds(
+  parentId: string,
+  kidProfileId: string,
+  youtubeVideoIds: string[],
+): Promise<number> {
+  if (youtubeVideoIds.length === 0) return 0;
+  const kid = await getDb()
+    .select({ id: kidProfiles.id })
+    .from(kidProfiles)
+    .where(and(eq(kidProfiles.id, kidProfileId), eq(kidProfiles.parentId, parentId)))
+    .limit(1);
+  if (!kid[0]) throw new Error('kid_profile not found for parent');
+  const rows = await getDb()
+    .delete(approvedVideos)
+    .where(
+      and(
+        eq(approvedVideos.kidProfileId, kidProfileId),
+        inArray(approvedVideos.youtubeVideoId, youtubeVideoIds),
+      ),
+    )
+    .returning({ id: approvedVideos.id });
+  return rows.length;
 }
 
 export type { ApprovedVideo, NewApprovedVideo } from '../schema';

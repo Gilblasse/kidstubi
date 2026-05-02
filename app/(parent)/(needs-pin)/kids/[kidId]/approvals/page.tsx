@@ -36,9 +36,9 @@ export default async function ApprovalsPage({
   const metaById = new Map(metaList.map((m) => [m.videoId, m]));
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 p-8">
-      <header className="flex items-end justify-between gap-4">
-        <div>
+    <div className="mx-auto max-w-4xl space-y-6 p-4 sm:p-8">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div className="min-w-0">
           <h1 className="text-2xl font-semibold">
             Approvals for {kid.displayName}
           </h1>
@@ -46,7 +46,7 @@ export default async function ApprovalsPage({
             {pending.length} waiting.
           </p>
         </div>
-        <nav className="flex gap-1 text-xs">
+        <nav className="flex flex-wrap gap-1 text-xs">
           <Link
             href={`/kids/${kidId}/approvals`}
             className={buttonVariants({
@@ -98,24 +98,24 @@ export default async function ApprovalsPage({
                       {SOURCE_LABEL[p.source as PendingApprovalSource] ?? p.source}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="flex items-start gap-4">
+                  <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-start">
                     {meta?.thumbnailUrl ? (
                       <a
                         href={`https://www.youtube.com/watch?v=${p.youtubeVideoId}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="relative aspect-video w-40 shrink-0 overflow-hidden rounded-md bg-muted"
+                        className="relative aspect-video w-full shrink-0 overflow-hidden rounded-md bg-muted sm:w-40"
                       >
                         <Image
                           src={meta.thumbnailUrl}
                           alt=""
                           fill
-                          sizes="160px"
+                          sizes="(min-width: 640px) 160px, 100vw"
                           className="object-cover"
                         />
                       </a>
                     ) : (
-                      <div className="aspect-video w-40 shrink-0 rounded-md bg-muted" />
+                      <div className="aspect-video w-full shrink-0 rounded-md bg-muted sm:w-40" />
                     )}
                     <div className="min-w-0 flex-1">
                       <div className="line-clamp-2 text-sm font-medium leading-snug">
@@ -128,7 +128,7 @@ export default async function ApprovalsPage({
                         Requested {formatTimeAgo(p.requestedAt)}
                       </div>
                     </div>
-                    <div className="flex shrink-0 gap-2">
+                    <div className="flex shrink-0 flex-wrap gap-2">
                       <form action={rejectPendingAction}>
                         <input type="hidden" name="kidId" value={kid.id} />
                         <input type="hidden" name="pendingId" value={p.id} />

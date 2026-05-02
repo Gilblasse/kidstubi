@@ -3,8 +3,16 @@ import { requireKidContext } from '@/lib/kid/context';
 import { listApprovedVideosForKid } from '@/db/queries/videos';
 import { listApprovedChannelsForKid } from '@/db/queries/channels';
 import { listPendingApprovalsForKid } from '@/db/queries/approvals';
-import { listVideoMetadata } from '@/lib/youtube/videos';
+import { listBlocklistForParent } from '@/db/queries/blocklist';
+import { listKidKeywords } from '@/db/queries/viewingRules';
+import {
+  listDiscoveryVideos,
+  listVideoMetadata,
+  type DiscoveryPage,
+} from '@/lib/youtube/videos';
+import { isMaxContentRating, isVideoAllowed } from '@/lib/kid/viewingRules';
 import { VideoCard } from '@/components/kid/VideoCard';
+import { DiscoveryShelfClient } from '@/components/kid/DiscoveryShelfClient';
 
 export default async function KidHomePage({
   params,
@@ -13,10 +21,30 @@ export default async function KidHomePage({
 }) {
   const { kidId } = await params;
   const { parent, kid } = await requireKidContext(kidId);
-  const [videos, channels, pending] = await Promise.all([
+  const [
+    videos,
+    channels,
+    pending,
+    parentBlocklist,
+    kidBlocklist,
+    discovery,
+  ] = await Promise.all([
     listApprovedVideosForKid(parent.id, kid.id),
     listApprovedChannelsForKid(parent.id, kid.id),
     listPendingApprovalsForKid(parent.id, kid.id, 'kid_search_request'),
+    kid.discoveryEnabled
+      ? listBlocklistForParent(parent.id)
+      : Promise.resolve([]),
+    kid.discoveryEnabled
+      ? listKidKeywords(parent.id, kid.id)
+      : Promise.resolve([]),
+    kid.discoveryEnabled
+      ? listDiscoveryVideos()
+      : Promise.resolve<DiscoveryPage>({
+          videos: [],
+          nextTokens: {},
+          hasMore: false,
+        }),
   ]);
   const channelTitleById = new Map(
     channels.map((c) => [c.youtubeChannelId, c.channelTitle]),
@@ -24,7 +52,32 @@ export default async function KidHomePage({
   const pendingMeta = await listVideoMetadata(pending.map((p) => p.youtubeVideoId));
   const pendingMetaById = new Map(pendingMeta.map((m) => [m.videoId, m]));
 
-  if (videos.length === 0 && pending.length === 0) {
+  const maxRating = isMaxContentRating(kid.maxContentRating)
+    ? kid.maxContentRating
+    : 'tv_g';
+  const approvedIdSet = new Set(videos.map((v) => v.youtubeVideoId));
+  const discoveryFiltered = discovery.videos.filter((v) => {
+    if (approvedIdSet.has(v.videoId)) return false;
+    return isVideoAllowed(
+      {
+        title: v.title,
+        description: v.description,
+        channelTitle: v.channelTitle,
+        rating: v.rating,
+      },
+      {
+        maxRating,
+        kidKeywords: kidBlocklist.map((b) => b.keyword),
+        parentKeywords: parentBlocklist.map((b) => b.keyword),
+      },
+    ).allowed;
+  });
+
+  if (
+    videos.length === 0 &&
+    pending.length === 0 &&
+    discoveryFiltered.length === 0
+  ) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
         <p className="text-center text-lg text-muted-foreground">
@@ -82,7 +135,7 @@ export default async function KidHomePage({
       )}
       {videos.length > 0 && (
         <section>
-          {pending.length > 0 && (
+          {(pending.length > 0 || discoveryFiltered.length > 0) && (
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
               Your videos
             </h2>
@@ -97,6 +150,26 @@ export default async function KidHomePage({
               />
             ))}
           </div>
+        </section>
+      )}
+      {kid.discoveryEnabled && discoveryFiltered.length > 0 && (
+        <DiscoveryShelfClient
+          kidId={kidId}
+          initialVideos={discoveryFiltered}
+          initialTokens={discovery.nextTokens}
+          initialHasMore={discovery.hasMore}
+        />
+      )}
+      {kid.discoveryEnabled && discoveryFiltered.length === 0 && (
+        <section>
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Recommended for you
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {discovery.videos.length === 0
+              ? 'No recommendations available right now.'
+              : 'All recommendations were filtered out by your viewing rules.'}
+          </p>
         </section>
       )}
     </div>

@@ -15,6 +15,20 @@
       "when": 1777512528752,
       "tag": "0001_normal_harrier",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1777692832565,
+      "tag": "0002_special_caretaker",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1777696392051,
+      "tag": "0003_overjoyed_ma_gnuci",
+      "breakpoints": true
     }
   ]
 }

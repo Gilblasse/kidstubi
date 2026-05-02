@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export function SearchBar({
@@ -11,6 +11,7 @@ export function SearchBar({
   defaultValue?: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [value, setValue] = useState(defaultValue);
 
   return (
@@ -28,13 +29,19 @@ export function SearchBar({
         type="search"
         name="q"
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => {
+          const next = e.target.value;
+          setValue(next);
+          if (next.trim() === '' && pathname === `/k/${kidId}/search`) {
+            router.push(`/k/${kidId}`);
+          }
+        }}
         placeholder="Search"
         className="h-9 flex-1 rounded-l-full border border-input bg-card px-4 text-sm outline-none focus:border-ring"
       />
       <button
         type="submit"
-        className="rounded-r-full border border-l-0 border-input bg-card px-4 text-sm font-medium hover:bg-accent"
+        className="cursor-pointer rounded-r-full border border-l-0 border-input bg-card px-4 text-sm font-medium transition-all hover:bg-accent active:translate-y-px active:scale-[0.98]"
       >
         Go
       </button>
