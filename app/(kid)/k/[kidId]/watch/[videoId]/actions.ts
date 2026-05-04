@@ -38,11 +38,11 @@ export async function startSessionAction(input: {
   );
   if (!video) return { error: 'forbidden' };
 
-  const { remainingSeconds } = await computeRemainingSecondsForKid(
-    parent.id,
-    activeKidId,
-  );
-  if (remainingSeconds <= 0) return { error: 'over_budget' };
+  const { remainingSeconds, withinAllowedWindow } =
+    await computeRemainingSecondsForKid(parent.id, activeKidId);
+  if (remainingSeconds <= 0 || !withinAllowedWindow) {
+    return { error: 'over_budget' };
+  }
 
   const session = await openScreenTimeSession(parent.id, activeKidId);
   return { sessionId: session.id };

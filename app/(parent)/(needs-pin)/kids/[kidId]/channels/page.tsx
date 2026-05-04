@@ -1,11 +1,8 @@
 import Link from 'next/link';
 import { requireParentKid } from '@/lib/parent/context';
 import { listApprovedChannelsForKid } from '@/db/queries/channels';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { lookupChannelAction } from './actions';
+import { ChannelTypeahead } from '@/components/parent/ChannelTypeahead';
 
 type SearchParams = Promise<{ error?: string }>;
 
@@ -35,22 +32,7 @@ export default async function ChannelsPage({
           <CardTitle>Add a channel</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <form
-            action={lookupChannelAction}
-            className="flex flex-col gap-3 sm:flex-row sm:items-end"
-          >
-            <input type="hidden" name="kidId" value={kid.id} />
-            <div className="flex-1">
-              <Label htmlFor="channelInput">YouTube URL, @handle, or channel ID</Label>
-              <Input
-                id="channelInput"
-                name="channelInput"
-                required
-                placeholder="@TEDEd or https://youtube.com/@TEDEd"
-              />
-            </div>
-            <Button type="submit">Find channel</Button>
-          </form>
+          <ChannelTypeahead kidId={kid.id} />
           {error && (
             <p className="text-sm text-destructive" role="alert">
               {error}

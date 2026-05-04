@@ -11,6 +11,13 @@ export type ChannelMetadata = {
   subscriberCount: number | null;
 };
 
+export type ChannelSearchResult = {
+  channelId: string;
+  title: string;
+  description: string;
+  thumbnailUrl: string;
+};
+
 export type ChannelVideo = {
   videoId: string;
   channelId: string;
@@ -125,6 +132,45 @@ export async function getChannelByIdOrUrl(
       ? Number(item.statistics.subscriberCount)
       : null,
   };
+}
+
+type SearchChannelsResponse = {
+  items?: Array<{
+    id: { channelId?: string };
+    snippet: {
+      title: string;
+      description: string;
+      channelId: string;
+      thumbnails: { default?: { url: string }; medium?: { url: string }; high?: { url: string } };
+    };
+  }>;
+};
+
+export async function searchChannels(
+  query: string,
+  maxResults = 8,
+): Promise<ChannelSearchResult[]> {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+  const data = await youtubeFetch<SearchChannelsResponse>({
+    path: '/search',
+    params: {
+      part: 'snippet',
+      type: 'channel',
+      q: trimmed,
+      maxResults,
+    },
+    revalidateSeconds: 300,
+  });
+  const items = data.items ?? [];
+  return items
+    .filter((i): i is typeof i & { id: { channelId: string } } => !!i.id.channelId)
+    .map((i) => ({
+      channelId: i.id.channelId,
+      title: i.snippet.title,
+      description: i.snippet.description,
+      thumbnailUrl: pickThumbnail(i.snippet.thumbnails),
+    }));
 }
 
 export async function listChannelVideos(

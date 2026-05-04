@@ -68,6 +68,10 @@ export function SidebarNav({ kids }: { kids: KidProfile[] }) {
           {kids.map((k) => {
             const kidActive = pathname.startsWith(`/kids/${k.id}/`);
             const channelsActive = isActive(pathname, `/kids/${k.id}/channels`);
+            const approvedVideosActive = isActive(
+              pathname,
+              `/kids/${k.id}/approved-videos`,
+            );
             const historyActive = isActive(pathname, `/kids/${k.id}/history`);
             const screenTimeActive = isActive(pathname, `/kids/${k.id}/screen-time`);
             const usageActive = isActive(pathname, `/kids/${k.id}/usage`);
@@ -101,6 +105,18 @@ export function SidebarNav({ kids }: { kids: KidProfile[] }) {
                         }
                       >
                         Channels
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href={`/kids/${k.id}/approved-videos`}
+                        aria-current={approvedVideosActive ? 'page' : undefined}
+                        className={
+                          'block rounded px-3 py-1.5 hover:bg-accent' +
+                          (approvedVideosActive ? ' ' + ACTIVE_CLASS : '')
+                        }
+                      >
+                        Approved videos
                       </Link>
                     </li>
                     <li>

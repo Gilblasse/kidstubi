@@ -1,0 +1,938 @@
+{
+  "id": "52b05f4d-035d-4ff5-97e8-71f11dd4cdd7",
+  "prevId": "5431d84d-c099-442e-b9e6-8207aa1c7a2c",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.approved_channels": {
+      "name": "approved_channels",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "kid_profile_id": {
+          "name": "kid_profile_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "youtube_channel_id": {
+          "name": "youtube_channel_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "channel_title": {
+          "name": "channel_title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "added_at": {
+          "name": "added_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "approved_channels_kid_profile_id_kid_profiles_id_fk": {
+          "name": "approved_channels_kid_profile_id_kid_profiles_id_fk",
+          "tableFrom": "approved_channels",
+          "tableTo": "kid_profiles",
+          "columnsFrom": [
+            "kid_profile_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.approved_videos": {
+      "name": "approved_videos",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "kid_profile_id": {
+          "name": "kid_profile_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "youtube_video_id": {
+          "name": "youtube_video_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "channel_id": {
+          "name": "channel_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "thumbnail_url": {
+          "name": "thumbnail_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "duration_seconds": {
+          "name": "duration_seconds",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content_rating": {
+          "name": "content_rating",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "made_for_kids": {
+          "name": "made_for_kids",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "visible_days": {
+          "name": "visible_days",
+          "type": "integer[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{0,1,2,3,4,5,6}'"
+        },
+        "approved_at": {
+          "name": "approved_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "approved_videos_kid_profile_id_kid_profiles_id_fk": {
+          "name": "approved_videos_kid_profile_id_kid_profiles_id_fk",
+          "tableFrom": "approved_videos",
+          "tableTo": "kid_profiles",
+          "columnsFrom": [
+            "kid_profile_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.digest_runs": {
+      "name": "digest_runs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "parent_id": {
+          "name": "parent_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "day_key": {
+          "name": "day_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sent_at": {
+          "name": "sent_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "digest_runs_parent_id_parents_id_fk": {
+          "name": "digest_runs_parent_id_parents_id_fk",
+          "tableFrom": "digest_runs",
+          "tableTo": "parents",
+          "columnsFrom": [
+            "parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.kid_profiles": {
+      "name": "kid_profiles",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "parent_id": {
+          "name": "parent_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "avatar_url": {
+          "name": "avatar_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "search_enabled": {
+          "name": "search_enabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "live_search_alerts": {
+          "name": "live_search_alerts",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "max_content_rating": {
+          "name": "max_content_rating",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'tv_g'"
+        },
+        "discovery_enabled": {
+          "name": "discovery_enabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "kid_profiles_parent_id_parents_id_fk": {
+          "name": "kid_profiles_parent_id_parents_id_fk",
+          "tableFrom": "kid_profiles",
+          "tableTo": "parents",
+          "columnsFrom": [
+            "parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "kid_profiles_max_content_rating_check": {
+          "name": "kid_profiles_max_content_rating_check",
+          "value": "\"kid_profiles\".\"max_content_rating\" in ('tv_y', 'tv_y7', 'tv_g', 'tv_pg', 'tv_14', 'tv_ma', 'unrestricted')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.kid_search_blocklist": {
+      "name": "kid_search_blocklist",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "kid_profile_id": {
+          "name": "kid_profile_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "keyword": {
+          "name": "keyword",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "kid_search_blocklist_kid_profile_id_kid_profiles_id_fk": {
+          "name": "kid_search_blocklist_kid_profile_id_kid_profiles_id_fk",
+          "tableFrom": "kid_search_blocklist",
+          "tableTo": "kid_profiles",
+          "columnsFrom": [
+            "kid_profile_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.notifications": {
+      "name": "notifications",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "parent_id": {
+          "name": "parent_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "body": {
+          "name": "body",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "href": {
+          "name": "href",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "read_at": {
+          "name": "read_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "notifications_parent_id_parents_id_fk": {
+          "name": "notifications_parent_id_parents_id_fk",
+          "tableFrom": "notifications",
+          "tableTo": "parents",
+          "columnsFrom": [
+            "parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.parents": {
+      "name": "parents",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "clerk_user_id": {
+          "name": "clerk_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pin_hash": {
+          "name": "pin_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "parents_clerk_user_id_unique": {
+          "name": "parents_clerk_user_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "clerk_user_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.pending_video_approvals": {
+      "name": "pending_video_approvals",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "kid_profile_id": {
+          "name": "kid_profile_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "youtube_video_id": {
+          "name": "youtube_video_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "requested_at": {
+          "name": "requested_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "resolved_at": {
+          "name": "resolved_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "resolution": {
+          "name": "resolution",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "pending_video_approvals_kid_profile_id_kid_profiles_id_fk": {
+          "name": "pending_video_approvals_kid_profile_id_kid_profiles_id_fk",
+          "tableFrom": "pending_video_approvals",
+          "tableTo": "kid_profiles",
+          "columnsFrom": [
+            "kid_profile_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "pending_video_approvals_source_check": {
+          "name": "pending_video_approvals_source_check",
+          "value": "\"pending_video_approvals\".\"source\" in ('channel_upload', 'kid_search_request')"
+        },
+        "pending_video_approvals_resolution_check": {
+          "name": "pending_video_approvals_resolution_check",
+          "value": "\"pending_video_approvals\".\"resolution\" is null or \"pending_video_approvals\".\"resolution\" in ('approved', 'rejected')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.screen_time_rules": {
+      "name": "screen_time_rules",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "kid_profile_id": {
+          "name": "kid_profile_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "day_of_week": {
+          "name": "day_of_week",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "allowed_minutes": {
+          "name": "allowed_minutes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "screen_time_rules_kid_profile_id_kid_profiles_id_fk": {
+          "name": "screen_time_rules_kid_profile_id_kid_profiles_id_fk",
+          "tableFrom": "screen_time_rules",
+          "tableTo": "kid_profiles",
+          "columnsFrom": [
+            "kid_profile_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "screen_time_rules_day_of_week_check": {
+          "name": "screen_time_rules_day_of_week_check",
+          "value": "\"screen_time_rules\".\"day_of_week\" between 0 and 6"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.screen_time_sessions": {
+      "name": "screen_time_sessions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "kid_profile_id": {
+          "name": "kid_profile_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "ended_at": {
+          "name": "ended_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "seconds_used": {
+          "name": "seconds_used",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "screen_time_sessions_kid_profile_id_kid_profiles_id_fk": {
+          "name": "screen_time_sessions_kid_profile_id_kid_profiles_id_fk",
+          "tableFrom": "screen_time_sessions",
+          "tableTo": "kid_profiles",
+          "columnsFrom": [
+            "kid_profile_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.screen_time_windows": {
+      "name": "screen_time_windows",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "kid_profile_id": {
+          "name": "kid_profile_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "day_of_week": {
+          "name": "day_of_week",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "start_minute": {
+          "name": "start_minute",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "end_minute": {
+          "name": "end_minute",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "screen_time_windows_kid_profile_id_kid_profiles_id_fk": {
+          "name": "screen_time_windows_kid_profile_id_kid_profiles_id_fk",
+          "tableFrom": "screen_time_windows",
+          "tableTo": "kid_profiles",
+          "columnsFrom": [
+            "kid_profile_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "screen_time_windows_day_of_week_check": {
+          "name": "screen_time_windows_day_of_week_check",
+          "value": "\"screen_time_windows\".\"day_of_week\" between 0 and 6"
+        },
+        "screen_time_windows_start_check": {
+          "name": "screen_time_windows_start_check",
+          "value": "\"screen_time_windows\".\"start_minute\" between 0 and 1439"
+        },
+        "screen_time_windows_end_check": {
+          "name": "screen_time_windows_end_check",
+          "value": "\"screen_time_windows\".\"end_minute\" between 1 and 1440"
+        },
+        "screen_time_windows_order_check": {
+          "name": "screen_time_windows_order_check",
+          "value": "\"screen_time_windows\".\"start_minute\" < \"screen_time_windows\".\"end_minute\""
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.search_blocklist": {
+      "name": "search_blocklist",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "parent_id": {
+          "name": "parent_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "keyword": {
+          "name": "keyword",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "search_blocklist_parent_id_parents_id_fk": {
+          "name": "search_blocklist_parent_id_parents_id_fk",
+          "tableFrom": "search_blocklist",
+          "tableTo": "parents",
+          "columnsFrom": [
+            "parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.search_history": {
+      "name": "search_history",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "kid_profile_id": {
+          "name": "kid_profile_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "query": {
+          "name": "query",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "result_count": {
+          "name": "result_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "searched_at": {
+          "name": "searched_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "search_history_kid_profile_id_kid_profiles_id_fk": {
+          "name": "search_history_kid_profile_id_kid_profiles_id_fk",
+          "tableFrom": "search_history",
+          "tableTo": "kid_profiles",
+          "columnsFrom": [
+            "kid_profile_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.watch_history": {
+      "name": "watch_history",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "kid_profile_id": {
+          "name": "kid_profile_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "youtube_video_id": {
+          "name": "youtube_video_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "watched_at": {
+          "name": "watched_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "seconds_watched": {
+          "name": "seconds_watched",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "watch_history_kid_profile_id_kid_profiles_id_fk": {
+          "name": "watch_history_kid_profile_id_kid_profiles_id_fk",
+          "tableFrom": "watch_history",
+          "tableTo": "kid_profiles",
+          "columnsFrom": [
+            "kid_profile_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

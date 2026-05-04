@@ -17,11 +17,13 @@ export function KidShell({
   kidId,
   kidName,
   kidAvatarUrl,
+  discoveryEnabled,
   children,
 }: {
   kidId: string;
   kidName: string;
   kidAvatarUrl: string | null;
+  discoveryEnabled: boolean;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -92,6 +94,20 @@ export function KidShell({
                 Home
               </Link>
             </li>
+            {discoveryEnabled && (
+              <li>
+                <Link
+                  href={`/k/${kidId}/my-videos`}
+                  aria-current={isActive(pathname, `/k/${kidId}/my-videos`) ? 'page' : undefined}
+                  className={
+                    'block rounded px-3 py-2 hover:bg-accent' +
+                    (isActive(pathname, `/k/${kidId}/my-videos`) ? ' ' + ACTIVE_CLASS : '')
+                  }
+                >
+                  My Videos
+                </Link>
+              </li>
+            )}
             <li>
               <Link
                 href={`/k/${kidId}/subscriptions`}

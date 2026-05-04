@@ -53,8 +53,14 @@ export function WatchSessionGuard({
           cache: 'no-store',
         });
         if (!res.ok) return;
-        const data = (await res.json()) as { remaining_seconds: number };
-        if (data.remaining_seconds <= 0) {
+        const data = (await res.json()) as {
+          remaining_seconds: number;
+          within_allowed_window?: boolean;
+        };
+        if (
+          data.remaining_seconds <= 0 ||
+          data.within_allowed_window === false
+        ) {
           record();
           router.replace(`/k/${kidId}/locked`);
         }

@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { SaveButton } from '@/components/parent/SaveButton';
 import { requireParentKid } from '@/lib/parent/context';
 import { listKidKeywords } from '@/db/queries/viewingRules';
 import { MAX_CONTENT_RATINGS, type MaxContentRating } from '@/db/schema';
@@ -100,9 +101,9 @@ export default async function ViewingRulesPage({
                 ))}
               </select>
             </div>
-            <Button type="submit" className="sm:w-auto" disabled={ratingDisabled}>
+            <SaveButton className="sm:w-auto" disabled={ratingDisabled}>
               Save
-            </Button>
+            </SaveButton>
           </form>
           {ratingDisabled && (
             <p className="mt-2 text-xs text-muted-foreground">

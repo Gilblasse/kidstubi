@@ -1,12 +1,14 @@
 import 'server-only';
-import { and, eq, gte, isNull, lt, sql } from 'drizzle-orm';
+import { and, asc, eq, gte, isNull, lt, sql } from 'drizzle-orm';
 import { getDb } from '../client';
 import {
   kidProfiles,
   screenTimeRules,
   screenTimeSessions,
+  screenTimeWindows,
   type ScreenTimeRule,
   type ScreenTimeSession,
+  type ScreenTimeWindow,
 } from '../schema';
 
 const ORPHAN_SESSION_CAP_SECONDS = 4 * 60 * 60;
@@ -55,6 +57,60 @@ export async function upsertScreenTimeRules(
   }
 }
 
+export async function listScreenTimeWindowsForKid(
+  parentId: string,
+  kidProfileId: string,
+): Promise<ScreenTimeWindow[]> {
+  const rows = await getDb()
+    .select({ w: screenTimeWindows })
+    .from(screenTimeWindows)
+    .innerJoin(kidProfiles, eq(screenTimeWindows.kidProfileId, kidProfiles.id))
+    .where(
+      and(
+        eq(kidProfiles.parentId, parentId),
+        eq(screenTimeWindows.kidProfileId, kidProfileId),
+      ),
+    )
+    .orderBy(asc(screenTimeWindows.dayOfWeek), asc(screenTimeWindows.startMinute));
+  return rows.map((r) => r.w);
+}
+
+export async function replaceScreenTimeWindows(
+  parentId: string,
+  kidProfileId: string,
+  windowsByDay: Record<number, Array<{ startMinute: number; endMinute: number }>>,
+): Promise<void> {
+  const db = getDb();
+  const kid = await db
+    .select({ id: kidProfiles.id })
+    .from(kidProfiles)
+    .where(and(eq(kidProfiles.id, kidProfileId), eq(kidProfiles.parentId, parentId)))
+    .limit(1);
+  if (!kid[0]) throw new Error('kid_profile not found for parent');
+  await db
+    .delete(screenTimeWindows)
+    .where(eq(screenTimeWindows.kidProfileId, kidProfileId));
+  const rows: Array<{
+    kidProfileId: string;
+    dayOfWeek: number;
+    startMinute: number;
+    endMinute: number;
+  }> = [];
+  for (const [dayStr, list] of Object.entries(windowsByDay)) {
+    const dow = Number(dayStr);
+    if (!(dow >= 0 && dow <= 6)) continue;
+    for (const w of list) {
+      const start = Math.round(w.startMinute / 15) * 15;
+      const end = Math.round(w.endMinute / 15) * 15;
+      if (start < 0 || end > 1440 || start >= end) continue;
+      rows.push({ kidProfileId, dayOfWeek: dow, startMinute: start, endMinute: end });
+    }
+  }
+  if (rows.length > 0) {
+    await db.insert(screenTimeWindows).values(rows);
+  }
+}
+
 function startOfTodayUtc(now: Date): Date {
   const d = new Date(now);
   d.setUTCHours(0, 0, 0, 0);
@@ -75,6 +131,7 @@ export type RemainingComputation = {
   remainingSeconds: number;
   allowedMinutes: number;
   usedSeconds: number;
+  withinAllowedWindow: boolean;
 };
 
 export async function computeRemainingSecondsForKid(
@@ -141,7 +198,25 @@ export async function computeRemainingSecondsForKid(
 
   const usedSeconds = closedSeconds + openSeconds;
   const remainingSeconds = Math.max(0, allowedSeconds - usedSeconds);
-  return { remainingSeconds, allowedMinutes, usedSeconds };
+
+  const windowRows = await db
+    .select({
+      s: screenTimeWindows.startMinute,
+      e: screenTimeWindows.endMinute,
+    })
+    .from(screenTimeWindows)
+    .where(
+      and(
+        eq(screenTimeWindows.kidProfileId, kidProfileId),
+        eq(screenTimeWindows.dayOfWeek, dow),
+      ),
+    );
+  const nowMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
+  const withinAllowedWindow =
+    windowRows.length === 0 ||
+    windowRows.some((w) => nowMinutes >= w.s && nowMinutes < w.e);
+
+  return { remainingSeconds, allowedMinutes, usedSeconds, withinAllowedWindow };
 }
 
 export async function closeOpenScreenTimeSessionsForKid(
@@ -241,4 +316,6 @@ export type {
   NewScreenTimeRule,
   ScreenTimeSession,
   NewScreenTimeSession,
+  ScreenTimeWindow,
+  NewScreenTimeWindow,
 } from '../schema';

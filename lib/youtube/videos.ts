@@ -1,5 +1,6 @@
 import 'server-only';
 import { parseISO8601Duration, youtubeFetch } from './client';
+import type { MaxContentRating } from '@/db/schema';
 import type { RatingSignal } from '@/lib/kid/viewingRules';
 
 export type VideoMetadata = {
@@ -100,6 +101,15 @@ export async function listVideoMetadata(
 
 const DISCOVERY_CATEGORY_IDS = ['10', '15', '20', '26', '27', '28'] as const;
 
+const KIDS_DISCOVERY_QUERIES = [
+  'kids songs',
+  'nursery rhymes',
+  'cartoons for kids',
+  'kids learning',
+  'kids stories',
+  'preschool videos',
+] as const;
+
 export type DiscoveryPageTokens = Record<string, string | null>;
 
 export type DiscoveryPage = {
@@ -108,10 +118,79 @@ export type DiscoveryPage = {
   hasMore: boolean;
 };
 
+type SearchIdsResponse = {
+  items?: Array<{ id: { videoId?: string } }>;
+  nextPageToken?: string;
+};
+
+async function listKidsDiscoveryVideos(
+  tokens: DiscoveryPageTokens,
+): Promise<DiscoveryPage> {
+  const results = await Promise.all(
+    KIDS_DISCOVERY_QUERIES.map(async (q) => {
+      const token = tokens[q];
+      if (token === null) {
+        return { key: q, ids: [] as string[], nextPageToken: null as string | null };
+      }
+      try {
+        const data = await youtubeFetch<SearchIdsResponse>({
+          path: '/search',
+          params: {
+            part: 'id',
+            type: 'video',
+            safeSearch: 'strict',
+            videoEmbeddable: 'true',
+            q,
+            maxResults: 10,
+            pageToken: token ?? undefined,
+          },
+          revalidateSeconds: 3600,
+        });
+        return {
+          key: q,
+          ids: (data.items ?? [])
+            .map((i) => i.id.videoId)
+            .filter((v): v is string => !!v),
+          nextPageToken: data.nextPageToken ?? null,
+        };
+      } catch (err) {
+        console.warn(
+          `[kids discovery] query "${q}" failed:`,
+          err instanceof Error ? err.message : err,
+        );
+        return { key: q, ids: [] as string[], nextPageToken: null as string | null };
+      }
+    }),
+  );
+  const seen = new Set<string>();
+  const allIds: string[] = [];
+  const nextTokens: DiscoveryPageTokens = {};
+  for (const r of results) {
+    for (const id of r.ids) {
+      if (seen.has(id)) continue;
+      seen.add(id);
+      allIds.push(id);
+    }
+    nextTokens[r.key] = r.nextPageToken;
+  }
+  const videos = await listVideoMetadata(allIds);
+  const orderById = new Map(allIds.map((id, i) => [id, i] as const));
+  videos.sort(
+    (a, b) =>
+      (orderById.get(a.videoId) ?? 0) - (orderById.get(b.videoId) ?? 0),
+  );
+  const hasMore = Object.values(nextTokens).some((t) => t !== null);
+  return { videos, nextTokens, hasMore };
+}
+
 export async function listDiscoveryVideos(
   tokens: DiscoveryPageTokens = {},
-  regionCode = 'US',
+  options: { maxRating?: MaxContentRating; regionCode?: string } = {},
 ): Promise<DiscoveryPage> {
+  if (options.maxRating === 'tv_y' || options.maxRating === 'tv_y7') {
+    return listKidsDiscoveryVideos(tokens);
+  }
+  const regionCode = options.regionCode ?? 'US';
   const results = await Promise.all(
     DISCOVERY_CATEGORY_IDS.map(async (categoryId) => {
       const token = tokens[categoryId];

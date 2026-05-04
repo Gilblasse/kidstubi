@@ -8,8 +8,9 @@ import { listApprovedVideosForChannel } from '@/db/queries/videos';
 import { listBlocklistForParent } from '@/db/queries/blocklist';
 import { listKidKeywords } from '@/db/queries/viewingRules';
 import { isMaxContentRating, isVideoAllowed } from '@/lib/kid/viewingRules';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SaveButton } from '@/components/parent/SaveButton';
 import { SelectAllCheckbox } from '@/components/parent/SelectAllCheckbox';
 import { formatDuration, formatTimeAgo } from '@/lib/format';
 import { submitReviewAction } from './actions';
@@ -96,7 +97,7 @@ export default async function ChannelReviewPage({
 
             <div className="flex flex-wrap items-center justify-between gap-3">
               <SelectAllCheckbox checkboxName="approve" />
-              <Button type="submit">Save approvals</Button>
+              <SaveButton>Save approvals</SaveButton>
             </div>
 
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">

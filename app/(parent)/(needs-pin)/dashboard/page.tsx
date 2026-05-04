@@ -5,12 +5,12 @@ import {
   listKidProfilesForParent,
   type KidDashboardStats,
 } from '@/db/queries/kidProfiles';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { KidAvatar } from '@/components/kid/KidAvatar';
 import { AvatarPicker } from '@/components/parent/AvatarPicker';
+import { AddKidDialog } from '@/components/parent/AddKidDialog';
+import { SaveButton } from '@/components/parent/SaveButton';
 import { presetFromAvatarUrl } from '@/lib/avatars';
 import { formatDuration, formatTimeAgo } from '@/lib/format';
 import { createKidAction, updateKidAvatarAction } from './actions';
@@ -42,28 +42,6 @@ export default async function DashboardPage() {
         </p>
       </header>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Add a kid</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form action={createKidAction} className="space-y-4">
-            <div>
-              <Label htmlFor="displayName">Display name</Label>
-              <Input
-                id="displayName"
-                name="displayName"
-                required
-                maxLength={40}
-                placeholder="e.g. Mika"
-              />
-            </div>
-            <AvatarPicker name="avatarKey" idPrefix="new" />
-            <Button type="submit">Add kid</Button>
-          </form>
-        </CardContent>
-      </Card>
-
       <section className="space-y-3">
         <div className="flex items-baseline justify-between">
           <h2 className="text-lg font-semibold">Kids ({kids.length})</h2>
@@ -72,15 +50,8 @@ export default async function DashboardPage() {
           </p>
         </div>
 
-        {kids.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-center text-sm text-muted-foreground">
-              Add a kid above to get started.
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {kids.map((k) => {
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {kids.map((k) => {
               const s = statsMap.get(k.id) ?? EMPTY_STATS;
               const currentPreset = presetFromAvatarUrl(k.avatarUrl);
               const allowedSeconds = s.allowedTodayMinutes * 60;
@@ -247,17 +218,15 @@ export default async function DashboardPage() {
                           idPrefix={`edit-${k.id}`}
                           defaultKey={currentPreset?.key}
                         />
-                        <Button type="submit" size="sm">
-                          Save avatar
-                        </Button>
+                        <SaveButton size="sm">Save avatar</SaveButton>
                       </form>
                     </details>
                   </CardContent>
                 </Card>
               );
             })}
-          </div>
-        )}
+          <AddKidDialog action={createKidAction} />
+        </div>
       </section>
     </div>
   );

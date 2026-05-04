@@ -14,7 +14,9 @@ export default async function KidChannelPage({
   const channels = await listApprovedChannelsForKid(parent.id, kid.id);
   const channel = channels.find((c) => c.youtubeChannelId === channelId);
   if (!channel) notFound();
-  const videos = await listApprovedVideosForChannel(parent.id, kid.id, channelId);
+  const all = await listApprovedVideosForChannel(parent.id, kid.id, channelId);
+  const dow = new Date().getUTCDay();
+  const videos = all.filter((v) => v.visibleDays.includes(dow));
 
   return (
     <div className="space-y-6">

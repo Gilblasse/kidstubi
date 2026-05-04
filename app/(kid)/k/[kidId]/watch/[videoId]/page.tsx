@@ -44,6 +44,10 @@ export default async function KidWatchPage({
   const { parent, kid } = await requireKidContext(kidId);
   const approved = await getApprovedVideo(parent.id, kid.id, videoId);
 
+  if (approved && !approved.visibleDays.includes(new Date().getUTCDay())) {
+    notFound();
+  }
+
   let title: string;
   let channelId: string;
   let approvedAt: Date | null;

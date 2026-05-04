@@ -12,12 +12,13 @@ export async function GET() {
   const activeKidId = await getActiveKidId();
   if (!activeKidId) return NextResponse.json({ error: 'no_active_kid' }, { status: 403 });
 
-  const { remainingSeconds } = await computeRemainingSecondsForKid(
-    parent.id,
-    activeKidId,
-  );
+  const { remainingSeconds, withinAllowedWindow } =
+    await computeRemainingSecondsForKid(parent.id, activeKidId);
   return NextResponse.json(
-    { remaining_seconds: remainingSeconds },
+    {
+      remaining_seconds: remainingSeconds,
+      within_allowed_window: withinAllowedWindow,
+    },
     { headers: { 'Cache-Control': 'no-store' } },
   );
 }

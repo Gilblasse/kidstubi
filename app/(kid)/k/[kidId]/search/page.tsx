@@ -34,10 +34,12 @@ export default async function KidSearchPage({
   }
 
   if (!kid.searchEnabled) {
-    const [videos, channels] = await Promise.all([
+    const [allVideos, channels] = await Promise.all([
       listApprovedVideosForKid(parent.id, kid.id),
       listApprovedChannelsForKid(parent.id, kid.id),
     ]);
+    const dow = new Date().getUTCDay();
+    const videos = allVideos.filter((v) => v.visibleDays.includes(dow));
     const channelTitleById = new Map(
       channels.map((c) => [c.youtubeChannelId, c.channelTitle]),
     );
@@ -92,16 +94,18 @@ export default async function KidSearchPage({
   const channelTitleById = new Map(
     approvedChannels.map((c) => [c.youtubeChannelId, c.channelTitle]),
   );
+  const dow = new Date().getUTCDay();
+  const visibleApproved = approvedVideos.filter((v) => v.visibleDays.includes(dow));
   const needle = query.toLowerCase();
-  const approvedMatches = approvedVideos.filter((v) => {
+  const approvedMatches = visibleApproved.filter((v) => {
     const channelTitle = channelTitleById.get(v.channelId) ?? '';
     return (
       v.title.toLowerCase().includes(needle) ||
       channelTitle.toLowerCase().includes(needle)
     );
   });
-  const approvedIds = new Set(approvedMatches.map((v) => v.youtubeVideoId));
-  const remoteResults = filtered.filter((r) => !approvedIds.has(r.videoId));
+  const allApprovedIds = new Set(approvedVideos.map((v) => v.youtubeVideoId));
+  const remoteResults = filtered.filter((r) => !allApprovedIds.has(r.videoId));
   const totalCount = approvedMatches.length + remoteResults.length;
 
   return (

@@ -1,7 +1,7 @@
 import { requireParentKid } from '@/lib/parent/context';
 import { listSearchHistoryForKid } from '@/db/queries/search';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SaveButton } from '@/components/parent/SaveButton';
 import { formatTimeAgo } from '@/lib/format';
 import { updateKidSearchSettingsAction } from './actions';
 
@@ -53,9 +53,7 @@ export default async function ParentSearchHistoryPage({
               />
               Notify me on every search
             </label>
-            <Button type="submit" size="sm">
-              Save
-            </Button>
+            <SaveButton size="sm">Save</SaveButton>
           </form>
         </CardContent>
       </Card>

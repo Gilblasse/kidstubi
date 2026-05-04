@@ -26,15 +26,15 @@ export async function loadMoreDiscoveryAction(
   if (!kid.discoveryEnabled) {
     return { videos: [], nextTokens: {}, hasMore: false };
   }
+  const maxRating = isMaxContentRating(kid.maxContentRating)
+    ? kid.maxContentRating
+    : 'tv_g';
   const [page, parentBlocklist, kidBlocklist, approved] = await Promise.all([
-    listDiscoveryVideos(tokens),
+    listDiscoveryVideos(tokens, { maxRating }),
     listBlocklistForParent(parent.id),
     listKidKeywords(parent.id, kid.id),
     listApprovedVideosForKid(parent.id, kid.id),
   ]);
-  const maxRating = isMaxContentRating(kid.maxContentRating)
-    ? kid.maxContentRating
-    : 'tv_g';
   const exclude = new Set<string>([
     ...excludeIds,
     ...approved.map((v) => v.youtubeVideoId),

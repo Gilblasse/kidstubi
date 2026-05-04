@@ -62,6 +62,10 @@ export const approvedVideos = pgTable('approved_videos', {
   durationSeconds: integer('duration_seconds').notNull(),
   contentRating: text('content_rating'),
   madeForKids: boolean('made_for_kids'),
+  visibleDays: integer('visible_days')
+    .array()
+    .notNull()
+    .default([0, 1, 2, 3, 4, 5, 6]),
   approvedAt: timestamp('approved_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -135,6 +139,37 @@ export const screenTimeSessions = pgTable('screen_time_sessions', {
   secondsUsed: integer('seconds_used').notNull().default(0),
 });
 
+export const screenTimeWindows = pgTable(
+  'screen_time_windows',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    kidProfileId: uuid('kid_profile_id')
+      .notNull()
+      .references(() => kidProfiles.id, { onDelete: 'cascade' }),
+    dayOfWeek: integer('day_of_week').notNull(),
+    startMinute: integer('start_minute').notNull(),
+    endMinute: integer('end_minute').notNull(),
+  },
+  (t) => [
+    check(
+      'screen_time_windows_day_of_week_check',
+      sql`${t.dayOfWeek} between 0 and 6`,
+    ),
+    check(
+      'screen_time_windows_start_check',
+      sql`${t.startMinute} between 0 and 1439`,
+    ),
+    check(
+      'screen_time_windows_end_check',
+      sql`${t.endMinute} between 1 and 1440`,
+    ),
+    check(
+      'screen_time_windows_order_check',
+      sql`${t.startMinute} < ${t.endMinute}`,
+    ),
+  ],
+);
+
 export const searchBlocklist = pgTable('search_blocklist', {
   id: uuid('id').primaryKey().defaultRandom(),
   parentId: uuid('parent_id')
@@ -192,6 +227,8 @@ export type ScreenTimeRule = typeof screenTimeRules.$inferSelect;
 export type NewScreenTimeRule = typeof screenTimeRules.$inferInsert;
 export type ScreenTimeSession = typeof screenTimeSessions.$inferSelect;
 export type NewScreenTimeSession = typeof screenTimeSessions.$inferInsert;
+export type ScreenTimeWindow = typeof screenTimeWindows.$inferSelect;
+export type NewScreenTimeWindow = typeof screenTimeWindows.$inferInsert;
 export type SearchBlocklistKeyword = typeof searchBlocklist.$inferSelect;
 export type NewSearchBlocklistKeyword = typeof searchBlocklist.$inferInsert;
 export type KidSearchBlocklistKeyword = typeof kidSearchBlocklist.$inferSelect;
